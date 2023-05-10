@@ -1,7 +1,11 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { UseTransactionContext } from '../../contexts/Transactioncontext';
 
 const Table = ({ data }) => {
+
+    const {transactionvalue,setTransactionValue} = UseTransactionContext();
+
     const [currentPageData, setCurrentPageData] = useState([]);
     const [tableMeta, setTableMeta] = useState({
         search: '',
@@ -12,6 +16,11 @@ const Table = ({ data }) => {
             order: ''
         },
     });
+
+
+    useEffect(()=>{
+        setCurrentPageData(data)
+    },[data])
 
     const [currentPage, setCurrentPage] = useState(1);
     const [filteredData, setFilteredData] = useState(data);
@@ -28,9 +37,12 @@ const Table = ({ data }) => {
         return Object.values(searchdata).some(val => (((typeof val == "string") || (typeof val == "number")) && val.toString().toLowerCase().includes(searchText.toLowerCase())));
     }
 
-    const handledelete=()=>{
-        
-    }
+    // const handledelete=(id)=>{
+    //     //console.log(id,"iddddd");
+    //     const data=transactionvalue;
+    //     const newval=data.splice(id, 1);
+    //     setTransactionValue(newval);
+    // }
 
     useEffect(() => {
         const { search, sort: { column, type, order } } = tableMeta;
@@ -162,7 +174,7 @@ const Table = ({ data }) => {
                                 </td>
                                 <td>
                                     <div>
-                                    <p onClick={handledelete}>Delete</p>
+                                    <p onClick={()=>{}}>Delete</p>
                                     </div>
                                 </td>
                             </tr>)}

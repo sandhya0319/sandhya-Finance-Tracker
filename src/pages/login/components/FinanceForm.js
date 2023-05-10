@@ -38,8 +38,10 @@ const schema = yup.object().shape({
 
 const FinanceForm = () => {
 
-    const {transactionvalue,setTransactionValue} = UseTransactionContext()
-    console.log(transactionvalue,"from context::::")
+    const {transactionvalue,setTransactionValue} = UseTransactionContext();
+
+    console.table("dataaa",transactionvalue)
+    
     const navigate = useNavigate();
 
     // const defaultValues = {
@@ -64,7 +66,7 @@ const FinanceForm = () => {
     })
 
     const { register, handleSubmit,setValue, formState: { errors } } = useForm({
-        defaultValues:formData,
+        // defaultValues:formData,
         resolver: yupResolver(schema)
     });
 
@@ -94,15 +96,18 @@ const FinanceForm = () => {
     };
 
     const generateId = () => {
-        const existingData = transactionvalue || [];
+        const existingData = transactionvalue;
+        // console.log(transactionvalue,"tv");
+        // console.log(existingData.length,"el");
         return existingData.length + 1;
+       
     }
 
     const onSubmit = async (data) => {
         const imgpath = await getBase64(data.image[0]);
         data.image = imgpath;
         data.id = generateId();
-        const existingData =transactionvalue|| [];
+        const existingData =transactionvalue;
         const newData = [...existingData, data];
         setFormData(newData);
         setTransactionValue(newData);

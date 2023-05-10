@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from 'react-router-dom';
 import Table from "./Table";
 import { UseTransactionContext } from "../../contexts/Transactioncontext";
@@ -6,6 +6,7 @@ import { UseTransactionContext } from "../../contexts/Transactioncontext";
 const ViewFinanceData = () => {
 
     const {transactionvalue,setTransactionValue} = UseTransactionContext()
+    //console.log("ttran);
 
     const navigate = useNavigate();
 
@@ -14,10 +15,21 @@ const ViewFinanceData = () => {
         navigate("/login");
     }
 
-    const allData=transactionvalue || [];
+    // const allData=transactionvalue;
+
+
+
     //const allData = JSON.parse(localStorage.getItem('formData') || '[]');
 
-    const [mainData] = useState(allData);
+    const [mainData, setMaindata] = useState([]);
+
+
+    useEffect(()=>{
+        
+        setMaindata(transactionvalue)
+    },[transactionvalue])
+
+
     const [grouped, setGrouped] = useState({});
 
     const handleGroupBy = (selectedValues) => {
@@ -37,6 +49,13 @@ const ViewFinanceData = () => {
     }
 
     return (
+        <>
+        {
+        console.log(transactionvalue,"context in virew")
+        }
+        {
+        console.log(mainData,"maindata in virew")
+        }
         <div className="container">
             <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
                 <a class="navbar-brand" href="#">Navbar</a>
@@ -58,7 +77,7 @@ const ViewFinanceData = () => {
                         id="selectg"
                         className="form-control"
                         name="selectedValues"
-                        onChange={e => handleGroupBy(e.target.value)}
+                        onChange={(e) => handleGroupBy(e.target.value)}
                     >
                         <option value="none">None</option>
                         <option value="transactionType">Transaction Type</option>
@@ -81,6 +100,10 @@ const ViewFinanceData = () => {
 
             </div>
         </div>
+        </>
+            
+            
+        
     )
 }
 

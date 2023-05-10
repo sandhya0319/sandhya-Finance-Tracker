@@ -24,7 +24,7 @@ const LoginPage = () => {
   });
 
   const onSubmit = (data) => {
-    console.log("sssssss",data);
+   // console.log("sssssss",data);
    
     const token = Math.floor(1000000000000000 + Math.random() * 9000000000000000).toString(36).substr(0, 10);
    
