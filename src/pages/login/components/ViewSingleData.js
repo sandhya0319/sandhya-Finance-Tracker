@@ -31,7 +31,7 @@ const ViewSingleData = () => {
             <td>{data.amount}</td>
             <td>{data.notes}</td>
             <td>
-              <img src={data.receipt}></img>
+              <img src={data.image}></img>
             </td>
           </tr>
         </tbody>
