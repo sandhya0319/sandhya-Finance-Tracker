@@ -10,30 +10,6 @@ import ProtectedRoutes from "./Services/ProtectedRoutes";
 import UnprotectedRoutes from "./Services/UnprotectedRoutes";
 import { Transactioncontext } from "./pages/contexts/Transactioncontext";
 
-
-
-
-const FinalRoute = (props) => {
-  const authtoken = localStorage.getItem("loggedintoken");
-
-  
-  const ispublic = props.ispublic;
-  const component = props.component;
-  if (ispublic) {
-    if (!authtoken) {
-      return component;
-    } else {
-      return <Navigate to={"/viewdata"} />;
-    }
-  } else {
-    if (authtoken) {
-      return component;
-    } else {
-      return <Navigate to={"/login"} />;
-    }
-  }
-};
-// export const TableContext=createContext();
 function App() {
   return (
     <div className="App">
@@ -42,7 +18,7 @@ function App() {
       </div>
       <Transactioncontext>
         <Routes>
-          {/* <Route element={<UnprotectedRoutes />}>
+          <Route element={<UnprotectedRoutes />}>
             <Route path="/" element={<RegisterPage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
@@ -54,36 +30,6 @@ function App() {
             <Route path="/form/:id" element={<FinanceForm />} />
             <Route path="/viewdata" element={<ViewFinanceData />} />
             <Route path="/viewsingledata" element={<ViewSingleData />} />
-          </Route> */}
-          <Route path="/">
-            <Route path="" element={<Navigate to={`/viewdata`} />} />
-
-            <Route
-              path="register"
-              element={
-                <FinalRoute ispublic={true} component={<RegisterPage />} />
-              }
-            />
-            <Route
-              path="login"
-              element={<FinalRoute ispublic={true} component={<LoginPage />} />}
-            />
-            <Route
-              path="form"
-              element={<FinalRoute component={<FinanceForm />} />}
-            />
-            <Route
-              path="form:id"
-              element={<FinalRoute component={<FinanceForm />} />}
-            />
-            <Route
-              path="viewdata"
-              element={<FinalRoute component={<ViewFinanceData />} />}
-            />
-            <Route
-              path="viewsingledata"
-              element={<FinalRoute component={<ViewSingleData />} />}
-            />
           </Route>
         </Routes>
       </Transactioncontext>

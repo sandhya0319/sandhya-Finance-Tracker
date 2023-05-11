@@ -4,9 +4,15 @@ import { UseTransactionContext } from '../../contexts/Transactioncontext';
 
 const Table = ({ data }) => {
 
-    const {transactionvalue,setTransactionValue} = UseTransactionContext();
+    const { transactionvalue, setTransactionValue } = UseTransactionContext();
 
+    // Main start
     const [currentPageData, setCurrentPageData] = useState([]);
+    useEffect(() => {
+        setCurrentPageData(data)
+    }, [data])
+    // Main End
+
     const [tableMeta, setTableMeta] = useState({
         search: '',
         perPage: 5,
@@ -16,11 +22,6 @@ const Table = ({ data }) => {
             order: ''
         },
     });
-
-
-    useEffect(()=>{
-        setCurrentPageData(data)
-    },[data])
 
     const [currentPage, setCurrentPage] = useState(1);
     const [filteredData, setFilteredData] = useState(data);
@@ -37,12 +38,10 @@ const Table = ({ data }) => {
         return Object.values(searchdata).some(val => (((typeof val == "string") || (typeof val == "number")) && val.toString().toLowerCase().includes(searchText.toLowerCase())));
     }
 
-    // const handledelete=(id)=>{
-    //     //console.log(id,"iddddd");
-    //     const data=transactionvalue;
-    //     const newval=data.splice(id, 1);
-    //     setTransactionValue(newval);
-    // }
+    const handleDelete = (id) => {
+        const updatedArr = transactionvalue.filter(obj => obj.id !== id);
+        setTransactionValue(updatedArr);
+    }
 
     useEffect(() => {
         const { search, sort: { column, type, order } } = tableMeta;
@@ -168,13 +167,13 @@ const Table = ({ data }) => {
                                     </div>
                                 </td>
                                 <td>
-                                <div>
-                                        <Link to={`/form/${row.id}`}>Edit</Link>
+                                    <div>
+                                        <Link to={`/form/${row['id']}`}>Edit</Link>
                                     </div>
                                 </td>
                                 <td>
                                     <div>
-                                    <p onClick={()=>{}}>Delete</p>
+                                        <p onClick={() => handleDelete(row['id'])}>Delete</p>
                                     </div>
                                 </td>
                             </tr>)}

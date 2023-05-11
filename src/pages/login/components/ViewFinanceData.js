@@ -50,22 +50,15 @@ const ViewFinanceData = () => {
 
     return (
         <>
-        {
-        console.log(transactionvalue,"context in virew")
-        }
-        {
-        console.log(mainData,"maindata in virew")
-        }
         <div className="container">
             <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-                <a class="navbar-brand" href="#">Navbar</a>
+                <a class="navbar-brand" href="#">Finance Tracker</a>
                 <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
                 <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
                     <div class="navbar-nav">
                         <Link to="/form" class="nav-item nav-link active">Add Transaction</Link>
-                        <Link to="/viewdata" class="nav-item nav-link active">View All Transactions</Link>
                         <button type="button" class="btn btn-outline-primary" onClick={handleLogout}>Logout</button>
                     </div>
                 </div>

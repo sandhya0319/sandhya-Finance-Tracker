@@ -1,9 +1,10 @@
 import { useNavigate } from 'react-router-dom'
-import React, { useEffect, useState,useContext } from 'react';
+import React, { useEffect, useState, useContext } from 'react';
 import { useForm } from 'react-hook-form';
 import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup'
-import { monthYearOptions,transactionTypeOptions,toaccountOptions, fromaccountOptions } from '../../../utils/constants';
+import { useParams } from "react-router-dom";
+import { monthYearOptions, transactionTypeOptions, toaccountOptions, fromaccountOptions } from '../../../utils/constants';
 // import { TableContext } from '../../contexts/Transactioncontext';
 import { UseTransactionContext } from '../../contexts/Transactioncontext';
 
@@ -38,23 +39,14 @@ const schema = yup.object().shape({
 
 const FinanceForm = () => {
 
-    const {transactionvalue,setTransactionValue} = UseTransactionContext();
+    const { transactionvalue, setTransactionValue } = UseTransactionContext();
 
-    console.table("dataaa",transactionvalue)
-    
+    const { id } = useParams();
+
     const navigate = useNavigate();
 
-    // const defaultValues = {
-    //     Transactiondate: "",
-    //     monthyear: "",
-    //     transactionType: "",
-    //     fromAccount: "",
-    //     toAccount: "",
-    //     amount: "",
-    //     image: "",
-    //     notes: "",
-    // }
-    const[formData,setFormData]=useState({
+
+    const [matchedData, setmatchedData] = useState({
         Transactiondate: "",
         monthyear: "",
         transactionType: "",
@@ -63,9 +55,9 @@ const FinanceForm = () => {
         amount: "",
         image: "",
         notes: "",
-    })
+})
 
-    const { register, handleSubmit,setValue, formState: { errors } } = useForm({
+    const { register, handleSubmit, setValue, formState: { errors } } = useForm({
         // defaultValues:formData,
         resolver: yupResolver(schema)
     });
@@ -81,7 +73,7 @@ const FinanceForm = () => {
                 setImagePreview(reader.result);
             };
             reader.readAsDataURL(file);
-        } else {
+        } else {    
             setImagePreview('');
         }
     };
@@ -97,30 +89,58 @@ const FinanceForm = () => {
 
     const generateId = () => {
         const existingData = transactionvalue;
-        // console.log(transactionvalue,"tv");
-        // console.log(existingData.length,"el");
         return existingData.length + 1;
-       
+
     }
 
     const onSubmit = async (data) => {
+       
         const imgpath = await getBase64(data.image[0]);
         data.image = imgpath;
-        data.id = generateId();
-        const existingData =transactionvalue;
-        const newData = [...existingData, data];
-        setFormData(newData);
-        setTransactionValue(newData);
-    //  localStorage.setItem("formData", JSON.stringify(newData));
-        alert("Records inserted successfully!!!");
-        navigate("/viewdata");
+
+        const val = {...data};
+        console.log("data",val);
+        const newval = {...matchedData,Transactiondate:val.Transactiondate,
+        transactionType:val.transactionType,
+        monthyear:val.monthyear,
+        fromAccount:val.fromAccount,
+        toAccount:val.toAccount,
+        amount:val.amount,
+        image:val.image,
+        notes:val.notes
+        }  
+        const existingData=transactionvalue;
+        if (id) {
+            existingData[id - 1] = newval;
+            setTransactionValue(existingData);
+            //setImagePreview(existingData);
+            alert("Records updated successfully!!!");
+            navigate("/viewdata");
+        } else {
+            // const imgpath = await getBase64(newval.image[0]);
+            // newval.image = imgpath;
+            newval.id = generateId();
+            const existingData = transactionvalue;
+            const newData = [...existingData, newval];
+            setTransactionValue(newData);
+            alert("Records inserted successfully!!!");
+            navigate("/viewdata");
+        }
     };
 
     useEffect(() => {
-       Object.entries(formData).forEach(([key,value])=>{
-        setValue(key,value)
-       });
-      }, [formData,setValue]);
+        if (!id) return
+        let matched = transactionvalue.find(obj => obj.id == id);
+        setmatchedData(matched);
+       //console.log("maaatt",matched)
+
+        if (matchedData) {
+        }
+        Object.entries(matchedData).forEach(([key, value]) => {
+            setValue(key, value)
+        });
+
+    }, [matchedData, setValue]);
 
     return (
         <div>
@@ -158,13 +178,13 @@ const FinanceForm = () => {
                                 options={monthYearOptions}
                                 {...register("monthyear")}
                             >
-                          
-                            {monthYearOptions.map((option)=>(
-                                <option key={option.value} value={option.value}>
-                                    {option.label}
-                                </option>
-                            ))}
-                              </select>
+
+                                {monthYearOptions.map((option) => (
+                                    <option key={option.value} value={option.value}>
+                                        {option.label}
+                                    </option>
+                                ))}
+                            </select>
                             <p>{errors.monthyear?.message}</p>
                         </div>
                     </div>
@@ -180,11 +200,11 @@ const FinanceForm = () => {
                                 options={transactionTypeOptions}
                                 {...register("transactionType")}
                             >
-                              {transactionTypeOptions.map((option)=>(
-                                <option key={option.value} value={option.value}>
-                                    {option.label}
-                                </option>
-                            ))}
+                                {transactionTypeOptions.map((option) => (
+                                    <option key={option.value} value={option.value}>
+                                        {option.label}
+                                    </option>
+                                ))}
                             </select>
                             <p>{errors.transactionType?.message}</p>
                         </div>
@@ -201,11 +221,11 @@ const FinanceForm = () => {
                                 option={fromaccountOptions}
                                 {...register("fromAccount")}
                             >
-                                 {fromaccountOptions.map((option)=>(
-                                <option key={option.value} value={option.value}>
-                                    {option.label}
-                                </option>
-                            ))}
+                                {fromaccountOptions.map((option) => (
+                                    <option key={option.value} value={option.value}>
+                                        {option.label}
+                                    </option>
+                                ))}
                             </select>
                             <p>{errors.fromAccount?.message}</p>
                         </div>
@@ -222,11 +242,11 @@ const FinanceForm = () => {
                                 option={toaccountOptions}
                                 {...register("toAccount")}
                             >
-                                {toaccountOptions.map((option)=>(
-                                <option key={option.value} value={option.value}>
-                                    {option.label}
-                                </option>
-                            ))}
+                                {toaccountOptions.map((option) => (
+                                    <option key={option.value} value={option.value}>
+                                        {option.label}
+                                    </option>
+                                ))}
                             </select>
                             <p>{errors.toAccount?.message}</p>
                         </div>
@@ -251,9 +271,9 @@ const FinanceForm = () => {
                             Receipt
                         </label>
                         <div class="col-sm-10">
-                            <input type="file" class="form-control" accept="image/*" {...register("image")} onChange={handleImageChange} />
+                            <input type="file" class="form-control" name="image" {...register("image")} onChange={handleImageChange} />
                             {errors.image && <p>{errors.image.message}</p>}
-                            {imagePreview && <img src={imagePreview} alt="Preview" />}
+                            {imagePreview && <img src={imagePreview} />}
                         </div>
                     </div>
                     <div class="form-group row">
@@ -270,12 +290,6 @@ const FinanceForm = () => {
                             <p>{errors.notes?.message}</p>
                         </div>
                     </div>
-                    {/* <label>
-                        Image:
-                        <input type="file" accept="image/*" {...register("image")} onChange={handleImageChange} />
-                        {errors.image && <p>{errors.image.message}</p>}
-                        {imagePreview && <img src={imagePreview} alt="Preview" />}
-                    </label> */}
                     <div class="form-group row">
                         <div class="col-sm-10">
                             <button type="submit" class="btn btn-primary">
