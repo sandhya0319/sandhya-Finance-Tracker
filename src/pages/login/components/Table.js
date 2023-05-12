@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { UseTransactionContext } from '../../contexts/Transactioncontext';
 
-const Table = ({ data }) => {
+const Table = ({ data, handleDelete }) => {
 
     const { transactionvalue, setTransactionValue } = UseTransactionContext();
 
@@ -36,11 +36,6 @@ const Table = ({ data }) => {
 
     const getSearchData = (searchdata) => {
         return Object.values(searchdata).some(val => (((typeof val == "string") || (typeof val == "number")) && val.toString().toLowerCase().includes(searchText.toLowerCase())));
-    }
-
-    const handleDelete = (id) => {
-        const updatedArr = transactionvalue.filter(obj => obj.id !== id);
-        setTransactionValue(updatedArr);
     }
 
     useEffect(() => {
@@ -173,7 +168,11 @@ const Table = ({ data }) => {
                                 </td>
                                 <td>
                                     <div>
-                                        <p onClick={() => handleDelete(row['id'])}>Delete</p>
+                                        <button className="btn btn-danger" onClick={() => handleDelete(row['id'])}>
+                                            Delete
+                                        </button>
+                                        {/* <Link to={`/viewdata/${row['id']}`}>Delete</Link> */}
+                                        {/* <p onClick={() => handleDelete(row['id'])}>Delete</p> */}
                                     </div>
                                 </td>
                             </tr>)}

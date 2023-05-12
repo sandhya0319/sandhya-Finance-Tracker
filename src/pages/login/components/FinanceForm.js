@@ -55,11 +55,12 @@ const FinanceForm = () => {
         amount: "",
         image: "",
         notes: "",
-})
+    })
 
     const { register, handleSubmit, setValue, formState: { errors } } = useForm({
         // defaultValues:formData,
-        resolver: yupResolver(schema)
+        resolver: yupResolver(schema),
+        
     });
 
     const [imagePreview, setImagePreview] = useState('');
@@ -73,7 +74,7 @@ const FinanceForm = () => {
                 setImagePreview(reader.result);
             };
             reader.readAsDataURL(file);
-        } else {    
+        } else {
             setImagePreview('');
         }
     };
@@ -92,28 +93,33 @@ const FinanceForm = () => {
         return existingData.length + 1;
 
     }
+    const removefile=()=>{
+        const imgdata=({...matchedData,image:""});
+        setmatchedData(imgdata);
+      }
 
     const onSubmit = async (data) => {
-       
+        // if(typeof data.image!=="string")
         const imgpath = await getBase64(data.image[0]);
         data.image = imgpath;
 
-        const val = {...data};
-        console.log("data",val);
-        const newval = {...matchedData,Transactiondate:val.Transactiondate,
-        transactionType:val.transactionType,
-        monthyear:val.monthyear,
-        fromAccount:val.fromAccount,
-        toAccount:val.toAccount,
-        amount:val.amount,
-        image:val.image,
-        notes:val.notes
-        }  
-        const existingData=transactionvalue;
+        const val = { ...data };
+        console.log("data", val);
+        const newval = {
+            ...matchedData, Transactiondate: val.Transactiondate,
+            transactionType: val.transactionType,
+            monthyear: val.monthyear,
+            fromAccount: val.fromAccount,
+            toAccount: val.toAccount,
+            amount: val.amount,
+            image: val.image,
+            notes: val.notes
+        }
+        //console.log(val.image,"imgggggg");
+        const existingData = transactionvalue;
         if (id) {
             existingData[id - 1] = newval;
             setTransactionValue(existingData);
-            //setImagePreview(existingData);
             alert("Records updated successfully!!!");
             navigate("/viewdata");
         } else {
@@ -132,13 +138,14 @@ const FinanceForm = () => {
         if (!id) return
         let matched = transactionvalue.find(obj => obj.id == id);
         setmatchedData(matched);
-       //console.log("maaatt",matched)
-
         if (matchedData) {
         }
         Object.entries(matchedData).forEach(([key, value]) => {
             setValue(key, value)
         });
+        setImagePreview(matchedData.image);
+        //setmatchedData(matchedData.image);
+        //setTransactionValue(matchedData.image)
 
     }, [matchedData, setValue]);
 
@@ -270,6 +277,35 @@ const FinanceForm = () => {
                         <label for="inputEmail3" class="col-sm-2 col-form-label">
                             Receipt
                         </label>
+
+
+                        {/* <div class="col-sm-10">
+                {formData.receipt==""?
+                <input
+                  type="file"
+                  class="form-control"
+                  name="receipt"
+                  onChange={handleImage}/>:
+                  <div>
+                  <div onClick={removefile}>Remove</div>
+                <img src={formData.receipt} /></div>}
+                
+                <p>{errors.receipt?.message}</p>
+              </div> */}
+
+                        {/* <div class="col-sm-10">
+                            {matchedData.image==""?
+                             <input type="file" class="form-control" name="image" {...register("image")} onChange={handleImageChange} />:
+                             <div>
+                                <div onClick={removefile}>remove</div>
+                                {errors.image && <p>{errors.image.message}</p>}
+                                {imagePreview && <img src={matchedData.image} />}
+                             </div>
+                            
+                            }
+         
+                        </div> */}
+
                         <div class="col-sm-10">
                             <input type="file" class="form-control" name="image" {...register("image")} onChange={handleImageChange} />
                             {errors.image && <p>{errors.image.message}</p>}

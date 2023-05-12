@@ -6,8 +6,7 @@ import ViewSingleData from "./pages/login/components/ViewSingleData";
 //import EditForm from './pages/login/components/EditForm';
 import LoginPage from "./pages/Authentication/components/LoginPage";
 import RegisterPage from "./pages/Authentication/components/RegisterPage";
-import ProtectedRoutes from "./Services/ProtectedRoutes";
-import UnprotectedRoutes from "./Services/UnprotectedRoutes";
+import {ProtectedRoutes,UnprotectedRoutes} from "./Services/ProtectedRoutes";
 import { Transactioncontext } from "./pages/contexts/Transactioncontext";
 
 function App() {
