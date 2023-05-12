@@ -24,10 +24,19 @@ const schema = yup.object().shape({
         [yup.ref("fromAccount")],
         "The 'To Account' and 'From Account' fields cannot have the same value"
     ).required(),
-    amount: yup.number("Please Enter only numbers").required("amount is required").min(1),
+    // amount: yup.number().min(1).required("amount is required"),
+    amount:yup.string().required("amount is required").test('len', 'Must greater than 0', (value) =>{
+        return value.size>0;
+    }),
     image: yup
         .mixed()
-        .required("An image is required")
+        .test("required","file is required",(value)=>{
+            if(value.length>0)
+            {
+                return value;
+            }
+            return false;
+        })
         .test("fileType", "Only JPG, JPEG and PNG images are allowed", (value) => {
             return value && value[0] && /^image\/(jpe?g|png)/.test(value[0].type);
         })
@@ -264,7 +273,7 @@ const FinanceForm = () => {
                         </label>
                         <div class="col-sm-10">
                             <input
-                                type="text"
+                                type="number"
                                 class="form-control"
                                 placeholder="Amount"
                                 name="amount"
