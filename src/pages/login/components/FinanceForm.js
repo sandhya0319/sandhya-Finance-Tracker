@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom'
 import React, { useEffect, useState, useContext } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, errors } from 'react-hook-form';
 import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup'
 import { useParams } from "react-router-dom";
@@ -13,35 +13,46 @@ const schema = yup.object().shape({
     Transactiondate: yup.string().required("Transactiondate is required"),
     monthyear: yup.string().required("monthyear is required"),
     transactionType: yup.string().required("transactionType is required"),
-    fromAccount: yup.string().oneOf(
+    fromAccount: yup.string().required('FromAccount is required').oneOf(
         ["personal-account", "real-living", "my-dream-home", "full-circle", "core-realors", "big-block"],
-        "Please select a valid option"
-    ).required(),
-    toAccount: yup.string().oneOf(
+        "FromAccount is required"
+    ),
+    toAccount: yup.string().required('ToAccount is required').oneOf(
         ["personal-account", "real-living", "my-dream-home", "full-circle", "core-realors", "big-block"],
-        "Please select a valid option"
+        "ToAccount is required"
     ).notOneOf(
         [yup.ref("fromAccount")],
         "The 'To Account' and 'From Account' fields cannot have the same value"
-    ).required(),
-    // amount: yup.number().min(1).required("amount is required"),
-    amount:yup.string().required("amount is required").test('len', 'Must greater than 0', (value) =>{
-        return value.size>0;
-    }),
+    ),
+    amount: yup.number().typeError("amount is required").required("amount is required").min(1),
     image: yup
         .mixed()
-        .test("required","file is required",(value)=>{
-            if(value.length>0)
-            {
+        .test("required", "file is required", (value) => {
+            if (value.length > 0) {
                 return value;
             }
             return false;
         })
         .test("fileType", "Only JPG, JPEG and PNG images are allowed", (value) => {
-            return value && value[0] && /^image\/(jpe?g|png)/.test(value[0].type);
+
+            if (value && value[0] && /^image\/(jpe?g|png)/.test(value[0].type)) {
+                return true;
+            }
+           
+            if (typeof value === 'string' && value.startsWith('data:image')) {
+                return true;
+            }
+            return false;
         })
         .test("fileSize", "Image must be less than 1 MB", (value) => {
-            return value && value[0] && value[0].size <= 1048576;
+
+            if (value && value[0] && value[0].size <= 1048576) {
+                return true;
+            }
+            if (typeof value === 'string' && value.startsWith('data:image')) {
+                return true;
+            }
+            return false;
         }),
     notes: yup.string().required("notes is required"),
 });
@@ -66,10 +77,10 @@ const FinanceForm = () => {
         notes: "",
     })
 
-    const { register, handleSubmit, setValue, formState: { errors } } = useForm({
+    const { register, setError, handleSubmit, setValue, formState: { errors } } = useForm({
         // defaultValues:formData,
         resolver: yupResolver(schema),
-        
+
     });
 
     const [imagePreview, setImagePreview] = useState('');
@@ -81,6 +92,11 @@ const FinanceForm = () => {
             const reader = new FileReader();
             reader.onloadend = () => {
                 setImagePreview(reader.result);
+                setError("image", {
+                    type: "manual",
+                    message: "",
+                });
+                
             };
             reader.readAsDataURL(file);
         } else {
@@ -102,18 +118,22 @@ const FinanceForm = () => {
         return existingData.length + 1;
 
     }
-    const removefile=()=>{
-        const imgdata=({...matchedData,image:""});
-        setmatchedData(imgdata);
-      }
+    const removefile = () => {
+        setImagePreview(matchedData.image = null);
+        setValue('image', '')
+    }
 
     const onSubmit = async (data) => {
-        // if(typeof data.image!=="string")
-        const imgpath = await getBase64(data.image[0]);
-        data.image = imgpath;
+        const imgIsBase64 = typeof data.image === 'string';
+
+        if (!imgIsBase64) {
+            const imgPath = await getBase64(data.image[0]);
+            data.image = imgPath;
+        }
+
+        //console.log(data);
 
         const val = { ...data };
-        console.log("data", val);
         const newval = {
             ...matchedData, Transactiondate: val.Transactiondate,
             transactionType: val.transactionType,
@@ -132,8 +152,6 @@ const FinanceForm = () => {
             alert("Records updated successfully!!!");
             navigate("/viewdata");
         } else {
-            // const imgpath = await getBase64(newval.image[0]);
-            // newval.image = imgpath;
             newval.id = generateId();
             const existingData = transactionvalue;
             const newData = [...existingData, newval];
@@ -147,15 +165,10 @@ const FinanceForm = () => {
         if (!id) return
         let matched = transactionvalue.find(obj => obj.id == id);
         setmatchedData(matched);
-        if (matchedData) {
-        }
         Object.entries(matchedData).forEach(([key, value]) => {
             setValue(key, value)
         });
         setImagePreview(matchedData.image);
-        //setmatchedData(matchedData.image);
-        //setTransactionValue(matchedData.image)
-
     }, [matchedData, setValue]);
 
     return (
@@ -286,39 +299,11 @@ const FinanceForm = () => {
                         <label for="inputEmail3" class="col-sm-2 col-form-label">
                             Receipt
                         </label>
-
-
-                        {/* <div class="col-sm-10">
-                {formData.receipt==""?
-                <input
-                  type="file"
-                  class="form-control"
-                  name="receipt"
-                  onChange={handleImage}/>:
-                  <div>
-                  <div onClick={removefile}>Remove</div>
-                <img src={formData.receipt} /></div>}
-                
-                <p>{errors.receipt?.message}</p>
-              </div> */}
-
-                        {/* <div class="col-sm-10">
-                            {matchedData.image==""?
-                             <input type="file" class="form-control" name="image" {...register("image")} onChange={handleImageChange} />:
-                             <div>
-                                <div onClick={removefile}>remove</div>
-                                {errors.image && <p>{errors.image.message}</p>}
-                                {imagePreview && <img src={matchedData.image} />}
-                             </div>
-                            
-                            }
-         
-                        </div> */}
-
                         <div class="col-sm-10">
                             <input type="file" class="form-control" name="image" {...register("image")} onChange={handleImageChange} />
-                            {errors.image && <p>{errors.image.message}</p>}
+                            {imagePreview && <div onClick={removefile}>remove</div>}
                             {imagePreview && <img src={imagePreview} />}
+                            {errors.image && <p>{errors.image.message}</p>}
                         </div>
                     </div>
                     <div class="form-group row">

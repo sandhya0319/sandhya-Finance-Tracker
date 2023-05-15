@@ -1,130 +1,91 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { UseTransactionContext } from '../../contexts/Transactioncontext';
 
 const Table = ({ data, handleDelete }) => {
 
-    const { transactionvalue, setTransactionValue } = UseTransactionContext();
-
-    // Main start
     const [currentPageData, setCurrentPageData] = useState([]);
-    useEffect(() => {
-        setCurrentPageData(data)
-    }, [data])
-    // Main End
-
-    const [tableMeta, setTableMeta] = useState({
-        search: '',
-        perPage: 5,
-        sort: {
-            column: '',
-            type: '', // string | number | date
-            order: ''
-        },
-    });
-
     const [currentPage, setCurrentPage] = useState(1);
-    const [filteredData, setFilteredData] = useState(data);
+    const [itemsPerPage, setItemsPerPage] = useState(2);
+    const [sortColumn, setSortColumn] = useState(null);
+    const [sortDirection, setSortDirection] = useState("asc");
+
+
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [data]);
+
+    useEffect(() => {
+        const startIndex = (currentPage - 1) * itemsPerPage;
+        const endIndex = startIndex + itemsPerPage;
+        setCurrentPageData(getSortedData(data).slice(startIndex, endIndex));
+    }, [data, currentPage, itemsPerPage, sortColumn, sortDirection]);
+
+    // Handle sort
+    const handleSort = (column, type) => {
+        if (column === sortColumn) {
+           
+            setSortDirection(sortDirection === "asc" ? "desc" : "asc");
+        } else {
+            
+            setSortColumn(column);
+            setSortDirection(type === "string" ? "asc" : "desc");
+        }
+        setCurrentPage(1); 
+    };
+
+    const getSortedData = (data) => {
+        if (!sortColumn) {
+            return data;
+        }
+
+        const sortedData = [...data];
+
+        sortedData.sort((a, b) => {
+            const valueA = a[sortColumn];
+            const valueB = b[sortColumn];
+            if (typeof valueA === "string" && typeof valueB === "string") {
+                return valueA.localeCompare(valueB);
+            }
+            return valueA - valueB;
+        });
+        if (sortDirection === "desc") {
+            sortedData.reverse();
+        }
+        return sortedData;
+    };
+
+    // Pagination
+    const totalPages = Math.ceil(data.length / itemsPerPage);
+
+    const handlePageChange = (pageNumber) => {
+        setCurrentPage(pageNumber);
+    };
+
+    const renderPagination = () => {
+        const pages = [];
+        for (let i = 1; i <= totalPages; i++) {
+            pages.push(
+                <button
+                    key={i}
+                    className={i === currentPage ? "active btn btn-primary rounded-1 mx-2" : "btn"}
+                    onClick={() => handlePageChange(i)}
+                >
+                    {i}
+                </button>
+            );
+        }
+        return pages;
+    };
+
 
     // searching
     const [searchText, setSearch] = useState("");
-
-
     const handleSearch = (e) => {
         setSearch(e.target.value);
     }
-
     const getSearchData = (searchdata) => {
         return Object.values(searchdata).some(val => (((typeof val == "string") || (typeof val == "number")) && val.toString().toLowerCase().includes(searchText.toLowerCase())));
     }
-
-    useEffect(() => {
-        const { search, sort: { column, type, order } } = tableMeta;
-        let searched = [...data];
-        if (search) {
-            searched = searched.filter(row => Object.values(row).some(cellValue => cellValue.includes(search)));
-        }
-
-        if (column) {
-            switch (type) {
-                case 'date':
-                    switch (order) {
-                        case 'ASC':
-                            searched = searched.sort((a, b) => (new Date(a[column]).getTime()) > (new Date(b[column]).getTime()) ? 1 : -1);
-                            break;
-                        case 'DESC':
-                            searched = searched.sort((a, b) => (new Date(a[column]).getTime()) < (new Date(b[column]).getTime()) ? 1 : -1);
-                            break;
-                        default:
-                    }
-                    break;
-                case 'number':
-                case 'currency':
-                    switch (order) {
-                        case 'ASC':
-                            searched = searched.sort((a, b) => +a[column] > +b[column] ? 1 : -1);
-                            break;
-                        case 'DESC':
-                            searched = searched.sort((a, b) => +a[column] < +b[column] ? 1 : -1);
-                            break;
-                        default:
-                    }
-                    break;
-                default:
-                    switch (order) {
-                        case 'ASC':
-                            searched = searched.sort((a, b) => a[column] > b[column] ? 1 : -1);
-                            break;
-                        case 'DESC':
-                            searched = searched.sort((a, b) => a[column] < b[column] ? 1 : -1);
-                            break;
-                        default:
-                    }
-            }
-        }
-        setFilteredData(searched);
-        onPageChange(1, searched);
-        setCurrentPage(1);
-        // eslint-disable-next-line
-    }, [tableMeta]);
-
-    const onPageChange = (newPage, freshFilteredData) => {
-        const filtered = freshFilteredData ? freshFilteredData : [...filteredData];
-        const start = (newPage - 1) * tableMeta.perPage;
-        const end = newPage * tableMeta.perPage;
-        setCurrentPage(newPage);
-        setCurrentPageData(filtered.slice(start, end))
-    }
-
-    const handleSort = (column, type) => {
-        const tempTableMeta = { ...tableMeta };
-        const sortObj = tempTableMeta.sort;
-        if (column === tempTableMeta.sort.column) {
-            switch (tempTableMeta.sort.order) {
-                case "":
-                    sortObj.column = column;
-                    sortObj.type = type;
-                    sortObj.order = 'ASC';
-                    break;
-                case "ASC":
-                    sortObj.order = 'DESC';
-                    break;
-                default:
-                    sortObj.column = '';
-                    sortObj.order = '';
-            }
-        } else {
-            sortObj.column = column;
-            sortObj.type = type;
-            sortObj.order = 'ASC';
-        }
-        setTableMeta(tempTableMeta);
-    }
-
-    const totalPages = useMemo(() => {
-        return Math.ceil(data.length / tableMeta.perPage)
-        // eslint-disable-next-line
-    }, [tableMeta.perPage]);
 
     return <>
         {
@@ -171,8 +132,6 @@ const Table = ({ data, handleDelete }) => {
                                         <button className="btn btn-danger" onClick={() => handleDelete(row['id'])}>
                                             Delete
                                         </button>
-                                        {/* <Link to={`/viewdata/${row['id']}`}>Delete</Link> */}
-                                        {/* <p onClick={() => handleDelete(row['id'])}>Delete</p> */}
                                     </div>
                                 </td>
                             </tr>)}
@@ -181,12 +140,7 @@ const Table = ({ data, handleDelete }) => {
 
                     <div class="pagination-wrapper flex text-center justify-between">
                         <div class="pagination">
-                            {Array(totalPages)
-                                .fill()
-                                .map((item, index) =>
-                                    <span className={`${index + 1 === currentPage ? 'active' : ''}`} onClick={() => onPageChange(index + 1)}>{index + 1}</span>
-                                )
-                            }
+                            {renderPagination()}
                         </div>
                     </div>
                 </>
